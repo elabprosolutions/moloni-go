@@ -18,10 +18,14 @@ func (taxes *Taxes) GetAll(req models.TaxesGetAllRequest) (*models.TaxesGetAllRe
 	return &resp, err
 }
 
-func (taxes *Taxes) Update() {
-
+func (taxes *Taxes) Update(req models.TaxesUpdateRequest) (*models.TaxesUpdateResponse, error) {
+	var resp models.TaxesUpdateResponse
+	err := taxes.backend.Call("/v1/taxes/update", req, &resp)
+	return &resp, err
 }
 
-func (taxes *Taxes) Delete() {
-
+func (taxes *Taxes) Delete(req models.TaxesDeleteRequest) (*models.TaxesDeleteResponse, error) {
+	var resp models.TaxesDeleteResponse
+	err := taxes.backend.Call("/v1/taxes/delete", req, &resp)
+	return &resp, err
 }

@@ -25,8 +25,8 @@ type Credentials struct {
 type TaxesInterface interface {
 	Insert(req models.TaxesInsertRequest) (*models.TaxesInsertResponse, error)
 	GetAll(req models.TaxesGetAllRequest) (*models.TaxesGetAllResponse, error)
-	Update()
-	Delete()
+	Update(req models.TaxesUpdateRequest) (*models.TaxesUpdateResponse, error)
+	Delete(req models.TaxesDeleteRequest) (*models.TaxesDeleteResponse, error)
 }
 
 func NewClient(creds Credentials, opts ...Option) (*Client, error) {

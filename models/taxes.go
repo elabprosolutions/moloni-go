@@ -29,7 +29,7 @@ const (
 	VATTypeOther        VATType = "OUT"
 )
 
-// TaxesInsertRequest represents the request structure for the API call to insert a new tax.
+// TaxesInsertRequest represents the request structure for inserting a new tax.
 type TaxesInsertRequest struct {
 	CompanyID       int      `json:"company_id"`                 // Mandatory
 	Name            string   `json:"name"`                       // Mandatory
@@ -43,13 +43,13 @@ type TaxesInsertRequest struct {
 	ActiveByDefault int      `json:"active_by_default"`          // Mandatory
 }
 
-// TaxesInsertResponse represents the response structure for the API call to insert a new tax.
+// TaxesInsertResponse represents the response structure for the inserting a new tax.
 type TaxesInsertResponse struct {
 	Valid int `json:"valid"`  // 1 for valid, 0 for not valid
 	TaxID int `json:"tax_id"` // The ID of the tax
 }
 
-// TaxesGetAllRequest represents the request structure for the given API endpoint.
+// TaxesGetAllRequest represents the request structure for getting all taxes.
 type TaxesGetAllRequest struct {
 	CompanyID       int      `json:"company_id"`                  // Mandatory
 	CountryID       *int     `json:"country_id,omitempty"`        // Optional
@@ -76,3 +76,34 @@ type TaxEntry struct {
 
 // TaxesGetAllResponse represents the response for getting all taxes.
 type TaxesGetAllResponse []TaxEntry
+
+// TaxesUpdateRequest represents the request structure for updating a tax.
+type TaxesUpdateRequest struct {
+	CompanyID       int      `json:"company_id"`        // Mandatory
+	TaxID           int      `json:"tax_id"`            // Mandatory
+	Value           int      `json:"value"`             // Mandatory
+	Type            TaxType  `json:"type"`              // Mandatory
+	SaftType        SaftType `json:"saft_type"`         // Mandatory
+	VATType         VATType  `json:"vat_type"`          // Mandatory
+	StampTax        string   `json:"stamp_tax"`         // Mandatory
+	ExemptionReason string   `json:"exemption_reason"`  // Mandatory
+	FiscalZone      string   `json:"fiscal_zone"`       // Mandatory
+	ActiveByDefault int      `json:"active_by_default"` // Mandatory
+}
+
+// TaxesUpdateResponse represents the response structure for the updating a tax.
+type TaxesUpdateResponse struct {
+	Valid int `json:"valid"`  // 1 for valid, 0 for not valid
+	TaxID int `json:"tax_id"` // The ID of the tax
+}
+
+// TaxesDeleteRequest represents the request structure for deleting a tax.
+type TaxesDeleteRequest struct {
+	CompanyID int `json:"company_id"` // Mandatory
+	TaxID     int `json:"tax_id"`     // Mandatory
+}
+
+// TaxesDeleteResponse represents the response structure for the deleting a tax.
+type TaxesDeleteResponse struct {
+	Valid int `json:"valid"` // 1 for valid, 0 for not valid
+}
