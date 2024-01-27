@@ -3,7 +3,7 @@ package moloni
 import (
 	"net/http"
 
-	"github.com/0gener/moloni-go/models"
+	"github.com/elabprosolutions/moloni-go/models"
 )
 
 const DefaultBaseURL = "https://api.moloni.pt"

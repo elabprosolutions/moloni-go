@@ -1,3 +1,3 @@
-module github.com/0gener/moloni-go
+module github.com/elabprosolutions/moloni-go
 
 go 1.20

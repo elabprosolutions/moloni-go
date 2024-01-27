@@ -1,6 +1,6 @@
 package moloni
 
-import "github.com/0gener/moloni-go/models"
+import "github.com/elabprosolutions/moloni-go/models"
 
 type DocumentSets struct {
 	backend Backend
