@@ -9,10 +9,11 @@ import (
 const DefaultBaseURL = "https://api.moloni.pt"
 
 type Client struct {
-	baseURL string
-	backend Backend
-	creds   Credentials
-	Taxes   TaxesInterface
+	baseURL      string
+	backend      Backend
+	creds        Credentials
+	Taxes        TaxesInterface
+	DocumentSets DocumentSetsInterface
 }
 
 type Credentials struct {
@@ -27,6 +28,13 @@ type TaxesInterface interface {
 	GetAll(req models.TaxesGetAllRequest) (*models.TaxesGetAllResponse, error)
 	Update(req models.TaxesUpdateRequest) (*models.TaxesUpdateResponse, error)
 	Delete(req models.TaxesDeleteRequest) (*models.TaxesDeleteResponse, error)
+}
+
+type DocumentSetsInterface interface {
+	Insert(req models.DocumentSetsInsertRequest) (*models.DocumentSetsInsertResponse, error)
+	GetAll(req models.DocumentSetsGetAllRequest) (*models.DocumentSetsGetAllResponse, error)
+	Update(req models.DocumentSetsUpdateRequest) (*models.DocumentSetsUpdateResponse, error)
+	Delete(req models.DocumentSetsDeleteRequest) (*models.DocumentSetsDeleteResponse, error)
 }
 
 func NewClient(creds Credentials, opts ...Option) (*Client, error) {
@@ -47,6 +55,7 @@ func NewClient(creds Credentials, opts ...Option) (*Client, error) {
 	}
 
 	c.Taxes = &Taxes{c.backend}
+	c.DocumentSets = &DocumentSets{c.backend}
 
 	return c, nil
 }
