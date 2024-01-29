@@ -67,9 +67,9 @@ type TaxEntry struct {
 	Value           float64  `json:"value"`
 	Type            TaxType  `json:"type"`
 	SaftType        SaftType `json:"saft_type"`
-	VATType         VATType  `json:"vat_type"`
-	StampTax        string   `json:"stamp_tax"`
-	ExemptionReason string   `json:"exemption_reason"`
+	VATType         *VATType `json:"vat_type,omitempty"`
+	StampTax        *string  `json:"stamp_tax,omitempty"`
+	ExemptionReason *string  `json:"exemption_reason,omitempty"`
 	FiscalZone      string   `json:"fiscal_zone"`
 	ActiveByDefault int      `json:"active_by_default"`
 }
@@ -79,16 +79,17 @@ type TaxesGetAllResponse []TaxEntry
 
 // TaxesUpdateRequest represents the request structure for updating a tax.
 type TaxesUpdateRequest struct {
-	CompanyID       int      `json:"company_id"`        // Mandatory
-	TaxID           int      `json:"tax_id"`            // Mandatory
-	Value           int      `json:"value"`             // Mandatory
-	Type            TaxType  `json:"type"`              // Mandatory
-	SaftType        SaftType `json:"saft_type"`         // Mandatory
-	VATType         VATType  `json:"vat_type"`          // Mandatory
-	StampTax        string   `json:"stamp_tax"`         // Mandatory
-	ExemptionReason string   `json:"exemption_reason"`  // Mandatory
-	FiscalZone      string   `json:"fiscal_zone"`       // Mandatory
-	ActiveByDefault int      `json:"active_by_default"` // Mandatory
+	CompanyID       int      `json:"company_id"`                 // Mandatory
+	Name            string   `json:"name"`                       // Mandatory
+	TaxID           int      `json:"tax_id"`                     // Mandatory
+	Value           int      `json:"value"`                      // Mandatory
+	Type            TaxType  `json:"type"`                       // Mandatory
+	SaftType        SaftType `json:"saft_type"`                  // Mandatory
+	VATType         *VATType `json:"vat_type,omitempty"`         // Mandatory
+	StampTax        *string  `json:"stamp_tax,omitempty"`        // Mandatory
+	ExemptionReason *string  `json:"exemption_reason,omitempty"` // Mandatory
+	FiscalZone      string   `json:"fiscal_zone"`                // Mandatory
+	ActiveByDefault int      `json:"active_by_default"`          // Mandatory
 }
 
 // TaxesUpdateResponse represents the response structure for the updating a tax.

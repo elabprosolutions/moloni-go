@@ -37,10 +37,9 @@ type DocumentSetsInterface interface {
 	Delete(req models.DocumentSetsDeleteRequest) (*models.DocumentSetsDeleteResponse, error)
 }
 
-func NewClient(creds Credentials, opts ...Option) (*Client, error) {
+func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL: DefaultBaseURL,
-		creds:   creds,
 	}
 
 	for _, opt := range opts {
