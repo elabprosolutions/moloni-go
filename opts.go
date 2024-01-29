@@ -23,7 +23,7 @@ func WithBaseURL(baseURL string) Option {
 	}
 }
 
-func WithCredentials(creds Credentials) Option {
+func WithCredentials(creds *Credentials) Option {
 	return func(c *Client) {
 		c.creds = creds
 	}
@@ -31,7 +31,7 @@ func WithCredentials(creds Credentials) Option {
 
 func LoadCredentialsFromEnv() Option {
 	return func(c *Client) {
-		c.creds = Credentials{
+		c.creds = &Credentials{
 			ClientID:     os.Getenv(ClientIDEnvVarName),
 			ClientSecret: os.Getenv(ClientSecretEnvVarName),
 			Username:     os.Getenv(UsernameEnvVarName),
