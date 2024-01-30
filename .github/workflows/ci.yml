@@ -7,6 +7,8 @@ on:
       - opened
       - reopened
       - synchronize
+  schedule:
+    - cron: '0 9 * * *' # Runs at 09:00 UTC every day
 
 jobs:
   lint:
@@ -34,3 +36,9 @@ jobs:
           go-version: "1.20"
       - name: Test
         run: make test
+        env:
+          MOLONI_CLIENT_ID: ${{ secrets.MOLONI_CLIENT_ID }}
+          MOLONI_CLIENT_SECRET: ${{ secrets.MOLONI_CLIENT_SECRET }}
+          MOLONI_USERNAME: ${{ secrets.MOLONI_USERNAME }}
+          MOLONI_PASSWORD: ${{ secrets.MOLONI_PASSWORD }}
+          

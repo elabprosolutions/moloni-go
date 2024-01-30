@@ -31,8 +31,8 @@ type DocumentSetsInsertRequest struct {
 
 // DocumentSetsInsertResponse represents the response structure for the inserting a new document set.
 type DocumentSetsInsertResponse struct {
-	Valid         int `json:"valid"`           // 1 for valid, 0 for not valid
-	DocumentSetID int `json:"document_set_id"` // The ID of the document set
+	Valid         int    `json:"valid"`           // 1 for valid, 0 for not valid
+	DocumentSetID string `json:"document_set_id"` // The ID of the document set
 }
 
 // DocumentSetsGetAllRequest represents the request structure for getting all document sets.
