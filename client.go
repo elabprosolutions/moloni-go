@@ -18,13 +18,13 @@ const (
 
 type Client struct {
 	baseURL        string
-	backend        Backend
 	creds          *Credentials
 	httpClient     *http.Client
 	auth           *AuthResponse
 	authValidUntil time.Time
 	Taxes          TaxesInterface
 	DocumentSets   DocumentSetsInterface
+	Products       ProductsInterface
 }
 
 type Credentials struct {
@@ -55,6 +55,13 @@ type DocumentSetsInterface interface {
 	Delete(req models.DocumentSetsDeleteRequest) (*models.DocumentSetsDeleteResponse, error)
 }
 
+type ProductsInterface interface {
+	Insert(req models.ProductsInsertRequest) (*models.ProductsInsertResponse, error)
+	GetAll(req models.ProductsGetAllRequest) (*models.ProductsGetAllResponse, error)
+	Update(req models.ProductsUpdateRequest) (*models.ProductsUpdateResponse, error)
+	Delete(req models.ProductsDeleteRequest) (*models.ProductsDeleteResponse, error)
+}
+
 func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL:    DefaultBaseURL,
@@ -65,19 +72,13 @@ func NewClient(opts ...Option) (*Client, error) {
 		opt(c)
 	}
 
-	if c.backend == nil {
-		c.backend = &HTTPBackend{
-			baseURL:    c.baseURL,
-			HTTPClient: http.DefaultClient,
-		}
-	}
-
 	if c.creds == nil {
 		return nil, fmt.Errorf("credentials not configured: please provide valid credentials using the appropriate option")
 	}
 
 	c.Taxes = &Taxes{c}
-	c.DocumentSets = &DocumentSets{c.backend}
+	c.DocumentSets = &DocumentSets{c}
+	c.Products = &Products{c}
 
 	return c, nil
 }
@@ -128,13 +129,18 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 }
 
 func (c *Client) requestOrRefreshAuthIfNecessary() error {
-	url := fmt.Sprintf("%s/v1/grant/?grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s",
-		c.baseURL,
-		c.creds.ClientID,
-		c.creds.ClientSecret,
-		c.creds.Username,
-		c.creds.Password,
-	)
+	var url string
+	var requestType string
+
+	if c.auth == nil {
+		requestType = "first-time token request"
+		url = c.loadURLForFirstTimeTokenRequest()
+	} else if c.authValidUntil.Before(time.Now()) {
+		requestType = "refresh token request"
+		url = c.loadURLForRefreshTokenRequest()
+	} else {
+		return nil
+	}
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
@@ -159,10 +165,30 @@ func (c *Client) requestOrRefreshAuthIfNecessary() error {
 	c.auth = &authResp
 	c.authValidUntil = time.Now().Add((time.Duration(authResp.ExpiresIn) * time.Second) - authSafeguardDuration)
 
-	log.Printf("authentication successful: token retrieved at: %s, expires at: %s\n",
+	log.Printf("authentication successful (%s): token retrieved at: %s, expires at: %s\n",
+		requestType,
 		time.Now().Format(time.RFC3339),
 		c.authValidUntil.Format(time.RFC3339),
 	)
 
 	return nil
+}
+
+func (c *Client) loadURLForFirstTimeTokenRequest() string {
+	return fmt.Sprintf("%s/v1/grant/?grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s",
+		c.baseURL,
+		c.creds.ClientID,
+		c.creds.ClientSecret,
+		c.creds.Username,
+		c.creds.Password,
+	)
+}
+
+func (c *Client) loadURLForRefreshTokenRequest() string {
+	return fmt.Sprintf("%s/v1/grant/?grant_type=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s",
+		c.baseURL,
+		c.creds.ClientID,
+		c.creds.ClientSecret,
+		c.auth.RefreshToken,
+	)
 }
