@@ -11,27 +11,27 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TaxTestSuite struct {
+type TaxesTestSuite struct {
 	suite.Suite
 	client *moloni.Client
 }
 
-func (s *TaxTestSuite) SetupSuite() {
+func (s *TaxesTestSuite) SetupSuite() {
 	client, err := moloni.NewClient(moloni.LoadCredentialsFromEnv())
 	s.Require().NoError(err)
 
 	s.client = client
 }
 
-func (s *TaxTestSuite) TearDownSuite() {
+func (s *TaxesTestSuite) TearDownSuite() {
 	s.Cleanup()
 }
 
-func TestTaxTestSuite(t *testing.T) {
-	suite.Run(t, new(TaxTestSuite))
+func TestTaxesTestSuite(t *testing.T) {
+	suite.Run(t, new(TaxesTestSuite))
 }
 
-func (s *TaxTestSuite) Cleanup() {
+func (s *TaxesTestSuite) Cleanup() {
 	resp, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
 		CompanyID: 5,
 	})
@@ -48,7 +48,7 @@ func (s *TaxTestSuite) Cleanup() {
 	}
 }
 
-func (s *TaxTestSuite) TestInsertTax() {
+func (s *TaxesTestSuite) TestInsertTax() {
 	vatType := models.VATTypeNormal
 
 	resp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
@@ -67,7 +67,7 @@ func (s *TaxTestSuite) TestInsertTax() {
 	s.NotZero(resp.TaxID)
 }
 
-func (s *TaxTestSuite) TestGetAllTaxes() {
+func (s *TaxesTestSuite) TestGetAllTaxes() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
@@ -91,7 +91,7 @@ func (s *TaxTestSuite) TestGetAllTaxes() {
 	s.assertTaxesGetAllResponseContainsTaxWithID(resp, insertResp.TaxID)
 }
 
-func (s *TaxTestSuite) TestUpdateTax() {
+func (s *TaxesTestSuite) TestUpdateTax() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
@@ -130,7 +130,7 @@ func (s *TaxTestSuite) TestUpdateTax() {
 	s.Equal(float64(6), tax.Value)
 }
 
-func (s *TaxTestSuite) TestDeleteTax() {
+func (s *TaxesTestSuite) TestDeleteTax() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
@@ -159,7 +159,7 @@ func (s *TaxTestSuite) TestDeleteTax() {
 	s.Nil(tax)
 }
 
-func (s *TaxTestSuite) findTaxWithID(taxID int) (*models.TaxEntry, error) {
+func (s *TaxesTestSuite) findTaxWithID(taxID int) (*models.TaxEntry, error) {
 	taxes, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
 		CompanyID: 5,
 	})
@@ -176,7 +176,7 @@ func (s *TaxTestSuite) findTaxWithID(taxID int) (*models.TaxEntry, error) {
 	return nil, nil
 }
 
-func (s *TaxTestSuite) assertTaxesGetAllResponseContainsTaxWithID(resp *models.TaxesGetAllResponse, taxID int) {
+func (s *TaxesTestSuite) assertTaxesGetAllResponseContainsTaxWithID(resp *models.TaxesGetAllResponse, taxID int) {
 	s.NotNil(resp, "TaxesGetAllResponse should not be nil")
 
 	found := false
@@ -190,7 +190,7 @@ func (s *TaxTestSuite) assertTaxesGetAllResponseContainsTaxWithID(resp *models.T
 	s.True(found, "Tax should be present in the TaxesGetAllResponse")
 }
 
-func (s *TaxTestSuite) integrationTestTaxName() string {
+func (s *TaxesTestSuite) integrationTestTaxName() string {
 	timestamp := time.Now().UnixNano()
 	return fmt.Sprintf("IntegrationTest%d", timestamp)
 }

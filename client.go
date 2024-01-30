@@ -24,6 +24,7 @@ type Client struct {
 	authValidUntil time.Time
 	Taxes          TaxesInterface
 	DocumentSets   DocumentSetsInterface
+	Products       ProductsInterface
 }
 
 type Credentials struct {
@@ -54,6 +55,13 @@ type DocumentSetsInterface interface {
 	Delete(req models.DocumentSetsDeleteRequest) (*models.DocumentSetsDeleteResponse, error)
 }
 
+type ProductsInterface interface {
+	Insert(req models.ProductsInsertRequest) (*models.ProductsInsertResponse, error)
+	GetAll(req models.ProductsGetAllRequest) (*models.ProductsGetAllResponse, error)
+	Update(req models.ProductsUpdateRequest) (*models.ProductsUpdateResponse, error)
+	Delete(req models.ProductsDeleteRequest) (*models.ProductsDeleteResponse, error)
+}
+
 func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL:    DefaultBaseURL,
@@ -70,6 +78,7 @@ func NewClient(opts ...Option) (*Client, error) {
 
 	c.Taxes = &Taxes{c}
 	c.DocumentSets = &DocumentSets{c}
+	c.Products = &Products{c}
 
 	return c, nil
 }
