@@ -1,6 +1,7 @@
 package moloni_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/elabprosolutions/moloni-go"
@@ -20,8 +21,29 @@ func (s *TaxTestSuite) SetupSuite() {
 	s.client = client
 }
 
+func (s *TaxTestSuite) TearDownSuite() {
+	s.Cleanup()
+}
+
 func TestTaxTestSuite(t *testing.T) {
 	suite.Run(t, new(TaxTestSuite))
+}
+
+func (s *TaxTestSuite) Cleanup() {
+	resp, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
+		CompanyID: 5,
+	})
+	s.Require().NoError(err)
+
+	for _, tax := range *resp {
+		if strings.Contains(tax.Name, "Integration Tests") {
+			_, err = s.client.Taxes.Delete(models.TaxesDeleteRequest{
+				CompanyID: 5,
+				TaxID:     tax.TaxID,
+			})
+			s.Require().NoError(err)
+		}
+	}
 }
 
 func (s *TaxTestSuite) TestInsertTax() {
