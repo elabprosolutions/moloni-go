@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+var CategoryID = 7775893
+
 type ProductsTestSuite struct {
 	suite.Suite
 	client *moloni.Client
@@ -34,7 +36,8 @@ func TestProductsTestSuite(t *testing.T) {
 
 func (s *ProductsTestSuite) Cleanup() {
 	resp, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID: 5,
+		CompanyID:  5,
+		CategoryID: &CategoryID,
 	})
 	s.Require().NoError(err)
 
@@ -67,7 +70,7 @@ func (s *ProductsTestSuite) TestInsertProduct() {
 	resp, err := s.client.Products.Insert(models.ProductsInsertRequest{
 		CompanyID:  5,
 		Name:       s.integrationTestProductName(),
-		CategoryID: 7775893,
+		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
@@ -106,7 +109,7 @@ func (s *ProductsTestSuite) TestGetAllProducts() {
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
 		CompanyID:  5,
 		Name:       s.integrationTestProductName(),
-		CategoryID: 7775893,
+		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
@@ -125,7 +128,8 @@ func (s *ProductsTestSuite) TestGetAllProducts() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID: 5,
+		CompanyID:  5,
+		CategoryID: &CategoryID,
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -150,7 +154,7 @@ func (s *ProductsTestSuite) TestUpdateProduct() {
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
 		CompanyID:  5,
 		Name:       s.integrationTestProductName(),
-		CategoryID: 7775893,
+		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
@@ -172,7 +176,7 @@ func (s *ProductsTestSuite) TestUpdateProduct() {
 		CompanyID:  5,
 		ProductID:  insertResp.ProductID,
 		Name:       s.integrationTestProductName(),
-		CategoryID: 7775893,
+		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
@@ -217,7 +221,7 @@ func (s *ProductsTestSuite) TestDeleteProduct() {
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
 		CompanyID:  5,
 		Name:       s.integrationTestProductName(),
-		CategoryID: 7775893,
+		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
@@ -250,7 +254,8 @@ func (s *ProductsTestSuite) TestDeleteProduct() {
 
 func (s *ProductsTestSuite) findProductWithID(productID int) (*models.ProductEntry, error) {
 	productes, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID: 5,
+		CompanyID:  5,
+		CategoryID: &CategoryID,
 	})
 	if err != nil {
 		return nil, err
