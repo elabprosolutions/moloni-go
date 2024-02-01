@@ -25,6 +25,7 @@ type Client struct {
 	Taxes          TaxesInterface
 	DocumentSets   DocumentSetsInterface
 	Products       ProductsInterface
+	Customers      CustomersInterface
 }
 
 type Credentials struct {
@@ -62,6 +63,13 @@ type ProductsInterface interface {
 	Delete(req models.ProductsDeleteRequest) (*models.ProductsDeleteResponse, error)
 }
 
+type CustomersInterface interface {
+	Insert(req models.CustomersInsertRequest) (*models.CustomersInsertResponse, error)
+	GetAll(req models.CustomersGetAllRequest) (*models.CustomersGetAllResponse, error)
+	Update(req models.CustomersUpdateRequest) (*models.CustomersUpdateResponse, error)
+	Delete(req models.CustomersDeleteRequest) (*models.CustomersDeleteResponse, error)
+}
+
 func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL:    DefaultBaseURL,
@@ -79,6 +87,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	c.Taxes = &Taxes{c}
 	c.DocumentSets = &DocumentSets{c}
 	c.Products = &Products{c}
+	c.Customers = &Customers{c}
 
 	return c, nil
 }

@@ -8,9 +8,11 @@ This Go client library provides a convenient way to interact with the Moloni API
 - ✅ Operations on Taxes.
 - 🚧 Operations on Document Sets.
 - 🚧 Operations on Products.
+- 🚧 Operations on Customers.
 - 📅 Operations on more resources.
 - 📅 Improve error handling.
 - 📅 Improve testing.
+- 📅 Improve documentation.
 - 📅 Allow to configure logger.
 
 ## Installation
