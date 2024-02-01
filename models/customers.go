@@ -52,7 +52,7 @@ type CustomerEntry struct {
 	CustomerID         int                        `json:"customer_id"`
 	Number             string                     `json:"number"`
 	Name               string                     `json:"name"`
-	Vat                string                     `json:"vat"`
+	VAT                string                     `json:"vat"`
 	Address            string                     `json:"address"`
 	City               *string                    `json:"city,omitempty"`
 	ZipCode            *string                    `json:"zip_code,omitempty"`
