@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var CategoryID = 7780605
+var CategoryID = 7789589
 
 type ProductsTestSuite struct {
 	suite.Suite
