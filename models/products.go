@@ -148,8 +148,8 @@ type ProductEntryPriceClass struct {
 type PriceClassEntry struct {
 	PriceClassID   int    `json:"price_class_id"`
 	Title          string `json:"title"`
-	LastModifiedBy int    `json:"lastmodifiedby"`
-	LastModified   int    `json:"lastmodified"`
+	LastModifiedBy string `json:"lastmodifiedby"`
+	LastModified   Time   `json:"lastmodified"`
 }
 
 // ProductEntryWarehouse represents the warehouse information for a product.
