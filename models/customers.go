@@ -9,7 +9,7 @@ type CustomersInsertRequest struct {
 	LanguageID       int            `json:"language_id"`
 	Address          string         `json:"address"`
 	ZipCode          *string        `json:"zip_code,omitempty"`
-	City             *string        `json:"city"`
+	City             string         `json:"city"`
 	CountryID        int            `json:"country_id"`
 	Email            *string        `json:"email,omitempty"`
 	Website          *string        `json:"website,omitempty"`
@@ -54,7 +54,7 @@ type CustomerEntry struct {
 	Name               string                     `json:"name"`
 	VAT                string                     `json:"vat"`
 	Address            string                     `json:"address"`
-	City               *string                    `json:"city,omitempty"`
+	City               string                     `json:"city"`
 	ZipCode            *string                    `json:"zip_code,omitempty"`
 	CountryID          int                        `json:"country_id"`
 	Email              *string                    `json:"email,omitempty"`
@@ -167,7 +167,7 @@ type CustomersUpdateRequest struct {
 	LanguageID       int            `json:"language_id"`
 	Address          string         `json:"address"`
 	ZipCode          *string        `json:"zip_code,omitempty"`
-	City             *string        `json:"city"`
+	City             string         `json:"city"`
 	CountryID        int            `json:"country_id"`
 	Email            *string        `json:"email,omitempty"`
 	Website          *string        `json:"website,omitempty"`
