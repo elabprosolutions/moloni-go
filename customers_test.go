@@ -55,7 +55,7 @@ func (s *CustomersTestSuite) TestInsertCustomer() {
 	zeroFloat := float64(0)
 	req := models.CustomersInsertRequest{
 		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		VAT:              generateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             s.integrationTestCustomerName(),
 		LanguageID:       1,
@@ -82,7 +82,7 @@ func (s *CustomersTestSuite) TestGetAllCustomers() {
 	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
 		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		VAT:              generateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             s.integrationTestCustomerName(),
 		LanguageID:       1,
@@ -114,7 +114,7 @@ func (s *CustomersTestSuite) TestUpdateCustomer() {
 	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
 		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		VAT:              generateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             s.integrationTestCustomerName(),
 		LanguageID:       1,
@@ -136,7 +136,7 @@ func (s *CustomersTestSuite) TestUpdateCustomer() {
 	resp, err := s.client.Customers.Update(models.CustomersUpdateRequest{
 		CompanyID:        5,
 		CustomerID:       insertResp.CustomerID,
-		VAT:              s.generateRandomNIF(),
+		VAT:              generateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             "IntegrationTest Customer Updated",
 		LanguageID:       1,
@@ -167,7 +167,7 @@ func (s *CustomersTestSuite) TestDeleteCustomer() {
 	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
 		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		VAT:              generateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             s.integrationTestCustomerName(),
 		LanguageID:       1,
@@ -235,18 +235,18 @@ func (s *CustomersTestSuite) integrationTestCustomerName() string {
 	return fmt.Sprintf("IntegrationTest%d", timestamp)
 }
 
-func (s *CustomersTestSuite) generateRandomNIF() string {
+func generateRandomNIF() string {
 	src := rand.NewSource(time.Now().UnixNano())
 	rng := rand.New(src)
 
 	nif := "3" + fmt.Sprintf("%07d", rng.Intn(10000000))
 
-	controlDigit := s.calculateControlDigit(nif)
+	controlDigit := calculateControlDigit(nif)
 
 	return nif + fmt.Sprintf("%d", controlDigit)
 }
 
-func (s *CustomersTestSuite) calculateControlDigit(nif string) int {
+func calculateControlDigit(nif string) int {
 	sum := 0
 	for i := 0; i < 8; i++ {
 		digit := int(nif[i] - '0')

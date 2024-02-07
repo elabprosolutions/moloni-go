@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -17,15 +18,17 @@ const (
 )
 
 type Client struct {
-	baseURL        string
-	creds          *Credentials
-	httpClient     *http.Client
-	auth           *AuthResponse
-	authValidUntil time.Time
-	Taxes          TaxesInterface
-	DocumentSets   DocumentSetsInterface
-	Products       ProductsInterface
-	Customers      CustomersInterface
+	baseURL            string
+	creds              *Credentials
+	httpClient         *http.Client
+	displayHumanErrors bool
+	auth               *AuthResponse
+	authValidUntil     time.Time
+	Taxes              TaxesInterface
+	DocumentSets       DocumentSetsInterface
+	Products           ProductsInterface
+	Customers          CustomersInterface
+	Invoices           InvoicesInterface
 }
 
 type Credentials struct {
@@ -70,6 +73,13 @@ type CustomersInterface interface {
 	Delete(req models.CustomersDeleteRequest) (*models.CustomersDeleteResponse, error)
 }
 
+type InvoicesInterface interface {
+	Insert(req models.InvoicesInsertRequest) (*models.InvoicesInsertResponse, error)
+	GetAll(req models.InvoicesGetAllRequest) (*models.InvoicesGetAllResponse, error)
+	Update(req models.InvoicesUpdateRequest) (*models.InvoicesUpdateResponse, error)
+	Delete(req models.InvoicesDeleteRequest) (*models.InvoicesDeleteResponse, error)
+}
+
 func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL:    DefaultBaseURL,
@@ -88,6 +98,7 @@ func NewClient(opts ...Option) (*Client, error) {
 	c.DocumentSets = &DocumentSets{c}
 	c.Products = &Products{c}
 	c.Customers = &Customers{c}
+	c.Invoices = &Invoices{c}
 
 	return c, nil
 }
@@ -109,6 +120,10 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 
 	url := fmt.Sprintf("%s%s?access_token=%s&json=true", c.baseURL, path, c.auth.AccessToken)
 
+	if c.displayHumanErrors {
+		url = fmt.Sprintf("%s&human_errors=true", url)
+	}
+
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return err
@@ -129,8 +144,13 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 	}
 
 	if v != nil {
-		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
-			return err
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body: %v", err)
+		}
+
+		if err := json.Unmarshal(bodyBytes, v); err != nil {
+			return fmt.Errorf("failed to decode JSON: %v; response body: %s", err, string(bodyBytes))
 		}
 	}
 
