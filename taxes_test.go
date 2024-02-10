@@ -1,10 +1,7 @@
 package moloni_test
 
 import (
-	"fmt"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/elabprosolutions/moloni-go"
 	"github.com/elabprosolutions/moloni-go/models"
@@ -24,36 +21,19 @@ func (s *TaxesTestSuite) SetupSuite() {
 }
 
 func (s *TaxesTestSuite) TearDownSuite() {
-	s.Cleanup()
+	CleanupTaxes(s.T(), s.client)
 }
 
 func TestTaxesTestSuite(t *testing.T) {
 	suite.Run(t, new(TaxesTestSuite))
 }
 
-func (s *TaxesTestSuite) Cleanup() {
-	resp, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
-		CompanyID: 5,
-	})
-	s.Require().NoError(err)
-
-	for _, tax := range *resp {
-		if strings.Contains(tax.Name, "IntegrationTest") {
-			_, err = s.client.Taxes.Delete(models.TaxesDeleteRequest{
-				CompanyID: 5,
-				TaxID:     tax.TaxID,
-			})
-			s.Require().NoError(err)
-		}
-	}
-}
-
 func (s *TaxesTestSuite) TestInsertTax() {
 	vatType := models.VATTypeNormal
 
 	resp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestTaxName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -71,8 +51,8 @@ func (s *TaxesTestSuite) TestGetAllTaxes() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestTaxName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -84,7 +64,7 @@ func (s *TaxesTestSuite) TestGetAllTaxes() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -95,8 +75,8 @@ func (s *TaxesTestSuite) TestUpdateTax() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestTaxName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -108,7 +88,7 @@ func (s *TaxesTestSuite) TestUpdateTax() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Taxes.Update(models.TaxesUpdateRequest{
-		CompanyID:       5,
+		CompanyID:       CompanyID,
 		TaxID:           insertResp.TaxID,
 		Name:            "IntegrationTest Tax Updated",
 		Value:           6,
@@ -134,8 +114,8 @@ func (s *TaxesTestSuite) TestDeleteTax() {
 	vatType := models.VATTypeNormal
 
 	insertResp, err := s.client.Taxes.Insert(models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestTaxName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -147,7 +127,7 @@ func (s *TaxesTestSuite) TestDeleteTax() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Taxes.Delete(models.TaxesDeleteRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 		TaxID:     insertResp.TaxID,
 	})
 	s.NoError(err)
@@ -161,7 +141,7 @@ func (s *TaxesTestSuite) TestDeleteTax() {
 
 func (s *TaxesTestSuite) findTaxWithID(taxID int) (*models.TaxEntry, error) {
 	taxes, err := s.client.Taxes.GetAll(models.TaxesGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	if err != nil {
 		return nil, err
@@ -188,9 +168,4 @@ func (s *TaxesTestSuite) assertTaxesGetAllResponseContainsTaxWithID(resp *models
 	}
 
 	s.True(found, "Tax should be present in the TaxesGetAllResponse")
-}
-
-func (s *TaxesTestSuite) integrationTestTaxName() string {
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("IntegrationTest%d", timestamp)
 }

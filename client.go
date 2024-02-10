@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/elabprosolutions/moloni-go/models"
 )
 
@@ -104,36 +105,10 @@ func NewClient(opts ...Option) (*Client, error) {
 }
 
 func (c *Client) Call(path string, params interface{}, v interface{}) error {
-	var reqBody []byte
-	var err error
-	if params != nil {
-		reqBody, err = json.Marshal(params)
-		if err != nil {
-			return err
-		}
+	createRequestFunc := func() (*http.Request, error) {
+		return c.createRequest(path, params)
 	}
-
-	err = c.requestOrRefreshAuthIfNecessary()
-	if err != nil {
-		return err
-	}
-
-	url := fmt.Sprintf("%s%s?access_token=%s&json=true", c.baseURL, path, c.auth.AccessToken)
-
-	if c.displayHumanErrors {
-		url = fmt.Sprintf("%s&human_errors=true", url)
-	}
-
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
-	if err != nil {
-		return err
-	}
-
-	if reqBody != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doWithRetry(createRequestFunc)
 	if err != nil {
 		return err
 	}
@@ -155,6 +130,71 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 	}
 
 	return nil
+}
+
+func (c *Client) createRequest(path string, params interface{}) (*http.Request, error) {
+	var reqBody []byte
+	var err error
+	if params != nil {
+		reqBody, err = json.Marshal(params)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = c.requestOrRefreshAuthIfNecessary()
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s%s?access_token=%s&json=true", c.baseURL, path, c.auth.AccessToken)
+
+	if c.displayHumanErrors {
+		url = fmt.Sprintf("%s&human_errors=true", url)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	if reqBody != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func (c *Client) doWithRetry(createRequestFunc func() (*http.Request, error)) (*http.Response, error) {
+	var resp *http.Response
+
+	retryErr := retry.Do(func() error {
+		req, err := createRequestFunc()
+		if err != nil {
+			return retry.Unrecoverable(err)
+		}
+
+		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			return err // might be a transient issue
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return fmt.Errorf("failed with status code: %s", resp.Status)
+		}
+
+		return nil
+	},
+		retry.Attempts(5),
+		retry.Delay(200*time.Millisecond),
+		retry.MaxDelay(1*time.Second),
+		retry.LastErrorOnly(true),
+	)
+	if retryErr != nil {
+		return nil, fmt.Errorf("retry attempts exceeded due to error: %v", retryErr)
+	}
+
+	return resp, nil
 }
 
 func (c *Client) requestOrRefreshAuthIfNecessary() error {

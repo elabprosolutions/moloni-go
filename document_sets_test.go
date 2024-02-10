@@ -1,11 +1,8 @@
 package moloni_test
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/elabprosolutions/moloni-go"
 	"github.com/elabprosolutions/moloni-go/models"
@@ -25,34 +22,17 @@ func (s *DocumentSetsTestSuite) SetupSuite() {
 }
 
 func (s *DocumentSetsTestSuite) TearDownSuite() {
-	s.Cleanup()
+	CleanupDocumentSets(s.T(), s.client)
 }
 
 func TestDocumentSetsTestSuite(t *testing.T) {
 	suite.Run(t, new(DocumentSetsTestSuite))
 }
 
-func (s *DocumentSetsTestSuite) Cleanup() {
-	resp, err := s.client.DocumentSets.GetAll(models.DocumentSetsGetAllRequest{
-		CompanyID: 5,
-	})
-	s.Require().NoError(err)
-
-	for _, ds := range *resp {
-		if strings.Contains(ds.Name, "IntegrationTest") {
-			_, err = s.client.DocumentSets.Delete(models.DocumentSetsDeleteRequest{
-				CompanyID:     5,
-				DocumentSetID: ds.DocumentSetID,
-			})
-			s.Require().NoError(err)
-		}
-	}
-}
-
 func (s *DocumentSetsTestSuite) TestInsertDocumentSet() {
 	req := models.DocumentSetsInsertRequest{
-		CompanyID: 5,
-		Name:      s.integrationTestDocumentSetName(),
+		CompanyID: CompanyID,
+		Name:      IntegrationTestRandomName(),
 	}
 	resp, err := s.client.DocumentSets.Insert(req)
 	s.NoError(err)
@@ -63,15 +43,15 @@ func (s *DocumentSetsTestSuite) TestInsertDocumentSet() {
 
 func (s *DocumentSetsTestSuite) TestGetAllDocumentSets() {
 	req := models.DocumentSetsInsertRequest{
-		CompanyID: 5,
-		Name:      s.integrationTestDocumentSetName(),
+		CompanyID: CompanyID,
+		Name:      IntegrationTestRandomName(),
 	}
 	insertResp, err := s.client.DocumentSets.Insert(req)
 	s.Require().NoError(err)
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.DocumentSets.GetAll(models.DocumentSetsGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -80,8 +60,8 @@ func (s *DocumentSetsTestSuite) TestGetAllDocumentSets() {
 
 func (s *DocumentSetsTestSuite) TestUpdateDocumentSet() {
 	insertReq := models.DocumentSetsInsertRequest{
-		CompanyID: 5,
-		Name:      s.integrationTestDocumentSetName(),
+		CompanyID: CompanyID,
+		Name:      IntegrationTestRandomName(),
 	}
 	insertResp, err := s.client.DocumentSets.Insert(insertReq)
 	s.Require().NoError(err)
@@ -91,9 +71,9 @@ func (s *DocumentSetsTestSuite) TestUpdateDocumentSet() {
 	s.Require().NoError(err)
 
 	req := models.DocumentSetsUpdateRequest{
-		CompanyID:     5,
+		CompanyID:     CompanyID,
 		DocumentSetID: documentSetID,
-		Name:          s.integrationTestDocumentSetName(),
+		Name:          IntegrationTestRandomName(),
 	}
 	resp, err := s.client.DocumentSets.Update(req)
 	s.NoError(err)
@@ -109,8 +89,8 @@ func (s *DocumentSetsTestSuite) TestUpdateDocumentSet() {
 
 func (s *DocumentSetsTestSuite) TestDeleteDocumentSet() {
 	insertReq := models.DocumentSetsInsertRequest{
-		CompanyID: 5,
-		Name:      s.integrationTestDocumentSetName(),
+		CompanyID: CompanyID,
+		Name:      IntegrationTestRandomName(),
 	}
 	insertResp, err := s.client.DocumentSets.Insert(insertReq)
 	s.Require().NoError(err)
@@ -120,7 +100,7 @@ func (s *DocumentSetsTestSuite) TestDeleteDocumentSet() {
 	s.Require().NoError(err)
 
 	resp, err := s.client.DocumentSets.Delete(models.DocumentSetsDeleteRequest{
-		CompanyID:     5,
+		CompanyID:     CompanyID,
 		DocumentSetID: documentSetID,
 	})
 	s.NoError(err)
@@ -134,7 +114,7 @@ func (s *DocumentSetsTestSuite) TestDeleteDocumentSet() {
 
 func (s *DocumentSetsTestSuite) findDocumentSetWithID(documentSetID int) (*models.DocumentSetEntry, error) {
 	documentSets, err := s.client.DocumentSets.GetAll(models.DocumentSetsGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	if err != nil {
 		return nil, err
@@ -161,9 +141,4 @@ func (s *DocumentSetsTestSuite) assertDocumentSetsGetAllResponseContainsDocument
 	}
 
 	s.True(found, "Document Set should be present in the DocumentSetsGetAllResponse")
-}
-
-func (s *DocumentSetsTestSuite) integrationTestDocumentSetName() string {
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("IntegrationTest%d", timestamp)
 }

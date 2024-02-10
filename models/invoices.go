@@ -46,14 +46,16 @@ type InvoicesInsertResponse struct {
 
 // InvoicesGetAllRequest represents the request structure for getting all invoices.
 type InvoicesGetAllRequest struct {
-	CompanyID int  `json:"company_id"`
-	Qty       *int `json:"qty,omitempty"`    // Defaults to 50
-	Offset    *int `json:"offset,omitempty"` // Defaults to 0
+	CompanyID  int  `json:"company_id"`
+	CustomerID *int `json:"customer_id,omitempty"`
+	Qty        *int `json:"qty,omitempty"`    // Defaults to 50
+	Offset     *int `json:"offset,omitempty"` // Defaults to 0
 }
 
 // InvoiceEntry represents a single invoice entry in the InvoicesGetAllResponse.
 type InvoiceEntry struct {
-	InvoiceID int `json:"invoice_id"`
+	DocumentID int    `json:"document_id"`
+	EntityName string `json:"entity_name"`
 }
 
 // InvoicesGetAllResponse represents the response for getting all invoices.
@@ -73,8 +75,8 @@ type InvoicesUpdateResponse struct {
 
 // InvoicesDeleteRequest represents the request structure for deleting a invoice.
 type InvoicesDeleteRequest struct {
-	CompanyID int `json:"company_id"`
-	InvoiceID int `json:"invoice_id"`
+	CompanyID  int `json:"company_id"`
+	DocumentID int `json:"document_id"`
 }
 
 // InvoicesDeleteResponse represents the response structure for the deleting a invoice.
