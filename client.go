@@ -135,9 +135,6 @@ func (c *Client) handleResponse(resp *http.Response, v interface{}) error {
 		}
 
 		if string(raw) == "[]" {
-			// if err := json.Unmarshal([]byte("null"), &v); err != nil {
-			// 	return fmt.Errorf("failed to decode JSON object: %v; response body: %s", err, string(bodyBytes))
-			// }
 			return nil
 		}
 
