@@ -142,6 +142,8 @@ func (c *Client) createRequest(path string, params interface{}) (*http.Request, 
 		}
 	}
 
+	fmt.Printf("path: %s, request body: %s\n", path, string(reqBody))
+
 	err = c.requestOrRefreshAuthIfNecessary()
 	if err != nil {
 		return nil, err
