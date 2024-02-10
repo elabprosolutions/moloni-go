@@ -76,9 +76,9 @@ func (s *InvoicesTestSuite) TestInsertInvoice() {
 func (s *InvoicesTestSuite) TestGetAllInvoices() {
 	product, productID := s.insertProduct()
 	// _, documentSetID := s.insertDocumentSet()
-	_, customerID := s.insertCustomer()
+	customer, customerID := s.insertCustomer()
 
-	insertResp, err := s.client.Invoices.Insert(models.InvoicesInsertRequest{
+	insertReq := models.InvoicesInsertRequest{
 		CompanyID: CompanyID,
 		Date: models.Time{
 			Time: time.Now(),
@@ -102,7 +102,8 @@ func (s *InvoicesTestSuite) TestGetAllInvoices() {
 				},
 			},
 		},
-	})
+	}
+	insertResp, err := s.client.Invoices.Insert(insertReq)
 	s.NoError(err)
 
 	resp, err := s.client.Invoices.GetAll(models.InvoicesGetAllRequest{
@@ -110,15 +111,15 @@ func (s *InvoicesTestSuite) TestGetAllInvoices() {
 	})
 	s.NoError(err)
 	s.NotNil(resp)
-	s.assertInvoicesGetAllResponseContainsInvoiceWithID(resp, insertResp.DocumentID)
+	s.assertInvoicesGetAllResponseContainsInvoiceWithID(resp, insertResp.DocumentID, insertReq, customer)
 }
 
 func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 	product, productID := s.insertProduct()
 	// _, documentSetID := s.insertDocumentSet()
-	_, customerID := s.insertCustomer()
+	customer, customerID := s.insertCustomer()
 
-	insertResp, err := s.client.Invoices.Insert(models.InvoicesInsertRequest{
+	insertReq := models.InvoicesInsertRequest{
 		CompanyID: CompanyID,
 		Date: models.Time{
 			Time: time.Now(),
@@ -142,7 +143,8 @@ func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 				},
 			},
 		},
-	})
+	}
+	insertResp, err := s.client.Invoices.Insert(insertReq)
 	s.NoError(err)
 
 	resp, err := s.client.Invoices.GetAll(models.InvoicesGetAllRequest{
@@ -152,7 +154,7 @@ func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 	s.NoError(err)
 	s.NotNil(resp)
 	s.Len(*resp, 1)
-	s.assertInvoicesGetAllResponseContainsInvoiceWithID(resp, insertResp.DocumentID)
+	s.assertInvoicesGetAllResponseContainsInvoiceWithID(resp, insertResp.DocumentID, insertReq, customer)
 }
 
 // func (s *InvoicesTestSuite) TestUpdateInvoice() {
@@ -289,18 +291,37 @@ func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 // 	return nil, nil
 // }
 
-func (s *InvoicesTestSuite) assertInvoicesGetAllResponseContainsInvoiceWithID(resp *models.InvoicesGetAllResponse, documentID int) {
+func (s *InvoicesTestSuite) assertInvoicesGetAllResponseContainsInvoiceWithID(resp *models.InvoicesGetAllResponse, documentID int, expected models.InvoicesInsertRequest, expectedCustomer models.CustomersInsertRequest) {
 	s.NotNil(resp, "InvoicesGetAllResponse should not be nil")
 
-	found := false
+	var found *models.InvoiceEntry
 	for _, invoice := range *resp {
 		if invoice.DocumentID == documentID {
-			found = true
+			found = &invoice
 			break
 		}
 	}
 
-	s.True(found, "Invoice should be present in the InvoicesGetAllResponse")
+	s.NotNil(found, "Invoice should be present in the InvoicesGetAllResponse")
+
+	s.EqualDateWithoutTime(expected.Date, found.Date)
+	s.EqualDateWithoutTime(expected.ExpirationDate, found.ExpirationDate)
+	s.Equal(-1, found.Number)
+	s.Equal(expectedCustomer.Name, found.EntityName)
+	s.Equal(expectedCustomer.Number, found.EntityNumber)
+	s.Equal(expectedCustomer.VAT, found.EntityVAT)
+	s.Equal(expectedCustomer.Address, found.EntityAddress)
+	s.Equal(expectedCustomer.City, found.EntityCity)
+	s.Equal("0000-000", found.EntityZipCode)
+	s.NotZero(found.GrossValue)
+	s.NotZero(found.TaxesValue)
+	s.NotZero(found.NetValue)
+}
+
+func (s *InvoicesTestSuite) EqualDateWithoutTime(expected models.Time, actual models.Time) {
+	s.Equal(expected.Year(), actual.Year())
+	s.Equal(expected.Month(), actual.Month())
+	s.Equal(expected.Day(), actual.Day())
 }
 
 func (s *InvoicesTestSuite) insertTax() (models.TaxesInsertRequest, int) {

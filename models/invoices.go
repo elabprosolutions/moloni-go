@@ -54,8 +54,34 @@ type InvoicesGetAllRequest struct {
 
 // InvoiceEntry represents a single invoice entry in the InvoicesGetAllResponse.
 type InvoiceEntry struct {
-	DocumentID int    `json:"document_id"`
-	EntityName string `json:"entity_name"`
+	DocumentID     int                 `json:"document_id"`
+	DocumentTypeID int                 `json:"document_type_id"`
+	DocumentSetID  int                 `json:"document_set_id"`
+	Number         int                 `json:"number"`
+	Date           Time                `json:"date"`
+	ExpirationDate Time                `json:"expiration_date"`
+	EntityNumber   string              `json:"entity_number"`
+	EntityName     string              `json:"entity_name"`
+	EntityVAT      string              `json:"entity_vat"`
+	EntityAddress  string              `json:"entity_address"`
+	EntityCity     string              `json:"entity_city"`
+	EntityZipCode  string              `json:"entity_zip_code"`
+	GrossValue     float64             `json:"gross_value"`
+	TaxesValue     float64             `json:"taxes_value"`
+	NetValue       float64             `json:"net_value"`
+	Status         InvoiceStatus       `json:"status"`
+	DocumentType   InvoiceDocumentType `json:"document_type"`
+	DocumentSet    InvoiceDocumentSet  `json:"document_set"`
+}
+
+type InvoiceDocumentType struct {
+	DocumentTypeID int    `json:"document_type_id"`
+	SaftType       string `json:"saft_type"`
+}
+
+type InvoiceDocumentSet struct {
+	DocumentSetID int    `json:"document_set_id"`
+	Name          string `json:"name"`
 }
 
 // InvoicesGetAllResponse represents the response for getting all invoices.
