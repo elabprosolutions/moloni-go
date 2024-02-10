@@ -33,3 +33,9 @@ func LoadCredentialsFromEnv() Option {
 		}
 	}
 }
+
+func DisplayHumanErrors() Option {
+	return func(c *Client) {
+		c.displayHumanErrors = true
+	}
+}

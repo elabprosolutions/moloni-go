@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/elabprosolutions/moloni-go/models"
 )
 
@@ -17,15 +19,17 @@ const (
 )
 
 type Client struct {
-	baseURL        string
-	creds          *Credentials
-	httpClient     *http.Client
-	auth           *AuthResponse
-	authValidUntil time.Time
-	Taxes          TaxesInterface
-	DocumentSets   DocumentSetsInterface
-	Products       ProductsInterface
-	Customers      CustomersInterface
+	baseURL            string
+	creds              *Credentials
+	httpClient         *http.Client
+	displayHumanErrors bool
+	auth               *AuthResponse
+	authValidUntil     time.Time
+	Taxes              TaxesInterface
+	DocumentSets       DocumentSetsInterface
+	Products           ProductsInterface
+	Customers          CustomersInterface
+	Invoices           InvoicesInterface
 }
 
 type Credentials struct {
@@ -70,6 +74,14 @@ type CustomersInterface interface {
 	Delete(req models.CustomersDeleteRequest) (*models.CustomersDeleteResponse, error)
 }
 
+type InvoicesInterface interface {
+	Insert(req models.InvoicesInsertRequest) (*models.InvoicesInsertResponse, error)
+	GetAll(req models.InvoicesGetAllRequest) (*models.InvoicesGetAllResponse, error)
+	GetOne(req models.InvoicesGetOneRequest) (*models.InvoicesGetOneResponse, error)
+	Update(req models.InvoicesUpdateRequest) (*models.InvoicesUpdateResponse, error)
+	Delete(req models.InvoicesDeleteRequest) (*models.InvoicesDeleteResponse, error)
+}
+
 func NewClient(opts ...Option) (*Client, error) {
 	c := &Client{
 		baseURL:    DefaultBaseURL,
@@ -88,53 +100,115 @@ func NewClient(opts ...Option) (*Client, error) {
 	c.DocumentSets = &DocumentSets{c}
 	c.Products = &Products{c}
 	c.Customers = &Customers{c}
+	c.Invoices = &Invoices{c}
 
 	return c, nil
 }
 
 func (c *Client) Call(path string, params interface{}, v interface{}) error {
+	createRequestFunc := func() (*http.Request, error) {
+		return c.createRequest(path, params)
+	}
+	resp, err := c.doWithRetry(createRequestFunc)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return c.handleResponse(resp, v)
+}
+
+func (c *Client) handleResponse(resp *http.Response, v interface{}) error {
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("response contains status code: %s", resp.Status)
+	}
+
+	if v != nil {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read response body: %v", err)
+		}
+
+		var raw json.RawMessage
+		if err := json.Unmarshal(bodyBytes, &raw); err != nil {
+			return fmt.Errorf("failed to decode JSON: %v; response body: %s", err, string(bodyBytes))
+		}
+
+		if string(raw) == "[]" {
+			return nil
+		}
+
+		if err := json.Unmarshal(raw, &v); err != nil {
+			return fmt.Errorf("failed to decode JSON object: %v; response body: %s", err, string(bodyBytes))
+		}
+	}
+
+	return nil
+}
+
+func (c *Client) createRequest(path string, params interface{}) (*http.Request, error) {
 	var reqBody []byte
 	var err error
 	if params != nil {
 		reqBody, err = json.Marshal(params)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	err = c.requestOrRefreshAuthIfNecessary()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	url := fmt.Sprintf("%s%s?access_token=%s&json=true", c.baseURL, path, c.auth.AccessToken)
 
+	if c.displayHumanErrors {
+		url = fmt.Sprintf("%s&human_errors=true", url)
+	}
+
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if reqBody != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	return req, nil
+}
 
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("response contains status code: %s", resp.Status)
-	}
+func (c *Client) doWithRetry(createRequestFunc func() (*http.Request, error)) (*http.Response, error) {
+	var resp *http.Response
 
-	if v != nil {
-		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
-			return err
+	retryErr := retry.Do(func() error {
+		req, err := createRequestFunc()
+		if err != nil {
+			return retry.Unrecoverable(err)
 		}
+
+		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			return err // might be a transient issue
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests {
+			return fmt.Errorf("failed with status code: %s", resp.Status)
+		}
+
+		return nil
+	},
+		retry.Attempts(5),
+		retry.Delay(200*time.Millisecond),
+		retry.MaxDelay(1*time.Second),
+		retry.LastErrorOnly(true),
+	)
+	if retryErr != nil {
+		return nil, fmt.Errorf("retry attempts exceeded due to error: %v", retryErr)
 	}
 
-	return nil
+	return resp, nil
 }
 
 func (c *Client) requestOrRefreshAuthIfNecessary() error {

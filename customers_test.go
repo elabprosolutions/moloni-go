@@ -1,10 +1,7 @@
 package moloni_test
 
 import (
-	"fmt"
-	"math/rand"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -26,49 +23,30 @@ func (s *CustomersTestSuite) SetupSuite() {
 }
 
 func (s *CustomersTestSuite) TearDownSuite() {
-	s.Cleanup()
+	CleanupCustomers(s.T(), s.client)
 }
 
 func TestCustomersTestSuite(t *testing.T) {
 	suite.Run(t, new(CustomersTestSuite))
 }
 
-func (s *CustomersTestSuite) Cleanup() {
-	resp, err := s.client.Customers.GetAll(models.CustomersGetAllRequest{
-		CompanyID: 5,
-	})
-	s.Require().NoError(err)
-
-	for _, customer := range *resp {
-		if strings.Contains(customer.Name, "IntegrationTest") {
-			_, err = s.client.Customers.Delete(models.CustomersDeleteRequest{
-				CompanyID:  5,
-				CustomerID: customer.CustomerID,
-			})
-			s.Require().NoError(err)
-		}
-	}
-}
-
 func (s *CustomersTestSuite) TestInsertCustomer() {
-	zeroInt := 0
-	zeroFloat := float64(0)
 	req := models.CustomersInsertRequest{
-		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		CompanyID:        CompanyID,
+		VAT:              GenerateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
-		Name:             s.integrationTestCustomerName(),
+		Name:             IntegrationTestRandomName(),
 		LanguageID:       1,
 		Address:          "Test",
 		City:             "Test",
 		CountryID:        1,
-		SalesmanID:       &zeroInt,
-		MaturityDateID:   zeroInt,
-		PaymentDay:       &zeroInt,
-		Discount:         &zeroFloat,
-		CreditLimit:      &zeroFloat,
-		PaymentMethodID:  zeroInt,
-		DeliveryMethodID: zeroInt,
+		SalesmanID:       moloni.Int(0),
+		MaturityDateID:   0,
+		PaymentDay:       moloni.Int(0),
+		Discount:         moloni.Float64(0),
+		CreditLimit:      moloni.Float64(0),
+		PaymentMethodID:  0,
+		DeliveryMethodID: 0,
 	}
 	resp, err := s.client.Customers.Insert(req)
 	s.NoError(err)
@@ -78,31 +56,29 @@ func (s *CustomersTestSuite) TestInsertCustomer() {
 }
 
 func (s *CustomersTestSuite) TestGetAllCustomers() {
-	zeroInt := 0
-	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
-		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		CompanyID:        CompanyID,
+		VAT:              GenerateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
-		Name:             s.integrationTestCustomerName(),
+		Name:             IntegrationTestRandomName(),
 		LanguageID:       1,
 		Address:          "Test",
 		City:             "Test",
 		CountryID:        1,
-		SalesmanID:       &zeroInt,
-		MaturityDateID:   zeroInt,
-		PaymentDay:       &zeroInt,
-		Discount:         &zeroFloat,
-		CreditLimit:      &zeroFloat,
-		PaymentMethodID:  zeroInt,
-		DeliveryMethodID: zeroInt,
+		SalesmanID:       moloni.Int(0),
+		MaturityDateID:   0,
+		PaymentDay:       moloni.Int(0),
+		Discount:         moloni.Float64(0),
+		CreditLimit:      moloni.Float64(0),
+		PaymentMethodID:  0,
+		DeliveryMethodID: 0,
 	}
 	insertResp, err := s.client.Customers.Insert(insertReq)
 	s.Require().NoError(err)
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Customers.GetAll(models.CustomersGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -110,46 +86,44 @@ func (s *CustomersTestSuite) TestGetAllCustomers() {
 }
 
 func (s *CustomersTestSuite) TestUpdateCustomer() {
-	zeroInt := 0
-	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
-		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		CompanyID:        CompanyID,
+		VAT:              GenerateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
-		Name:             s.integrationTestCustomerName(),
+		Name:             IntegrationTestRandomName(),
 		LanguageID:       1,
 		Address:          "Test",
 		City:             "Test",
 		CountryID:        1,
-		SalesmanID:       &zeroInt,
-		MaturityDateID:   zeroInt,
-		PaymentDay:       &zeroInt,
-		Discount:         &zeroFloat,
-		CreditLimit:      &zeroFloat,
-		PaymentMethodID:  zeroInt,
-		DeliveryMethodID: zeroInt,
+		SalesmanID:       moloni.Int(0),
+		MaturityDateID:   0,
+		PaymentDay:       moloni.Int(0),
+		Discount:         moloni.Float64(0),
+		CreditLimit:      moloni.Float64(0),
+		PaymentMethodID:  0,
+		DeliveryMethodID: 0,
 	}
 	insertResp, err := s.client.Customers.Insert(insertReq)
 	s.Require().NoError(err)
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Customers.Update(models.CustomersUpdateRequest{
-		CompanyID:        5,
+		CompanyID:        CompanyID,
 		CustomerID:       insertResp.CustomerID,
-		VAT:              s.generateRandomNIF(),
+		VAT:              GenerateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
 		Name:             "IntegrationTest Customer Updated",
 		LanguageID:       1,
 		Address:          "Test",
 		City:             "Test",
 		CountryID:        1,
-		SalesmanID:       &zeroInt,
-		MaturityDateID:   zeroInt,
-		PaymentDay:       &zeroInt,
-		Discount:         &zeroFloat,
-		CreditLimit:      &zeroFloat,
-		PaymentMethodID:  zeroInt,
-		DeliveryMethodID: zeroInt,
+		SalesmanID:       moloni.Int(0),
+		MaturityDateID:   0,
+		PaymentDay:       moloni.Int(0),
+		Discount:         moloni.Float64(0),
+		CreditLimit:      moloni.Float64(0),
+		PaymentMethodID:  0,
+		DeliveryMethodID: 0,
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -163,31 +137,29 @@ func (s *CustomersTestSuite) TestUpdateCustomer() {
 }
 
 func (s *CustomersTestSuite) TestDeleteCustomer() {
-	zeroInt := 0
-	zeroFloat := float64(0)
 	insertReq := models.CustomersInsertRequest{
-		CompanyID:        5,
-		VAT:              s.generateRandomNIF(),
+		CompanyID:        CompanyID,
+		VAT:              GenerateRandomNIF(),
 		Number:           strconv.FormatInt(time.Now().UnixNano(), 10),
-		Name:             s.integrationTestCustomerName(),
+		Name:             IntegrationTestRandomName(),
 		LanguageID:       1,
 		Address:          "Test",
 		City:             "Test",
 		CountryID:        1,
-		SalesmanID:       &zeroInt,
-		MaturityDateID:   zeroInt,
-		PaymentDay:       &zeroInt,
-		Discount:         &zeroFloat,
-		CreditLimit:      &zeroFloat,
-		PaymentMethodID:  zeroInt,
-		DeliveryMethodID: zeroInt,
+		SalesmanID:       moloni.Int(0),
+		MaturityDateID:   0,
+		PaymentDay:       moloni.Int(0),
+		Discount:         moloni.Float64(0),
+		CreditLimit:      moloni.Float64(0),
+		PaymentMethodID:  0,
+		DeliveryMethodID: 0,
 	}
 	insertResp, err := s.client.Customers.Insert(insertReq)
 	s.Require().NoError(err)
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Customers.Delete(models.CustomersDeleteRequest{
-		CompanyID:  5,
+		CompanyID:  CompanyID,
 		CustomerID: insertResp.CustomerID,
 	})
 	s.NoError(err)
@@ -201,7 +173,7 @@ func (s *CustomersTestSuite) TestDeleteCustomer() {
 
 func (s *CustomersTestSuite) findCustomerWithID(customerID int) (*models.CustomerEntry, error) {
 	customeres, err := s.client.Customers.GetAll(models.CustomersGetAllRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 	})
 	if err != nil {
 		return nil, err
@@ -228,36 +200,4 @@ func (s *CustomersTestSuite) assertCustomersGetAllResponseContainsCustomerWithID
 	}
 
 	s.True(found, "Customer should be present in the CustomersGetAllResponse")
-}
-
-func (s *CustomersTestSuite) integrationTestCustomerName() string {
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("IntegrationTest%d", timestamp)
-}
-
-func (s *CustomersTestSuite) generateRandomNIF() string {
-	src := rand.NewSource(time.Now().UnixNano())
-	rng := rand.New(src)
-
-	nif := "3" + fmt.Sprintf("%07d", rng.Intn(10000000))
-
-	controlDigit := s.calculateControlDigit(nif)
-
-	return nif + fmt.Sprintf("%d", controlDigit)
-}
-
-func (s *CustomersTestSuite) calculateControlDigit(nif string) int {
-	sum := 0
-	for i := 0; i < 8; i++ {
-		digit := int(nif[i] - '0')
-		sum += digit * (9 - i)
-	}
-
-	remainder := sum % 11
-	controlDigit := 11 - remainder
-
-	if controlDigit >= 10 {
-		return 0
-	}
-	return controlDigit
 }

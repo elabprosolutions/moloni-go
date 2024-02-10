@@ -5,10 +5,12 @@ This Go client library provides a convenient way to interact with the Moloni API
 ## Roadmap
 
 - ✅ Automatic authentication.
+- ✅ Retry requests with exponencial backoff.
 - ✅ Operations on Taxes.
 - 🚧 Operations on Document Sets.
 - 🚧 Operations on Products.
 - 🚧 Operations on Customers.
+- 🚧 Operations on Invoices.
 - 📅 Operations on more resources.
 - 📅 Improve error handling.
 - 📅 Improve testing.

@@ -1,9 +1,7 @@
 package moloni_test
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -11,8 +9,6 @@ import (
 	"github.com/elabprosolutions/moloni-go/models"
 	"github.com/stretchr/testify/suite"
 )
-
-var CategoryID = 7789589
 
 type ProductsTestSuite struct {
 	suite.Suite
@@ -27,36 +23,18 @@ func (s *ProductsTestSuite) SetupSuite() {
 }
 
 func (s *ProductsTestSuite) TearDownSuite() {
-	s.Cleanup()
+	CleanupProducts(s.T(), s.client)
 }
 
 func TestProductsTestSuite(t *testing.T) {
 	suite.Run(t, new(ProductsTestSuite))
 }
 
-func (s *ProductsTestSuite) Cleanup() {
-	resp, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID:  5,
-		CategoryID: &CategoryID,
-	})
-	s.Require().NoError(err)
-
-	for _, product := range *resp {
-		if strings.Contains(product.Name, "IntegrationTest") {
-			_, err = s.client.Products.Delete(models.ProductsDeleteRequest{
-				CompanyID: 5,
-				ProductID: product.ProductID,
-			})
-			s.Require().NoError(err)
-		}
-	}
-}
-
 func (s *ProductsTestSuite) TestInsertProduct() {
 	vatType := models.VATTypeNormal
 	insertTaxReq := models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestProductName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -68,8 +46,8 @@ func (s *ProductsTestSuite) TestInsertProduct() {
 	s.Require().NoError(err)
 
 	resp, err := s.client.Products.Insert(models.ProductsInsertRequest{
-		CompanyID:  5,
-		Name:       s.integrationTestProductName(),
+		CompanyID:  CompanyID,
+		Name:       IntegrationTestRandomName(),
 		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -94,8 +72,8 @@ func (s *ProductsTestSuite) TestInsertProduct() {
 func (s *ProductsTestSuite) TestGetAllProducts() {
 	vatType := models.VATTypeNormal
 	insertTaxReq := models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestProductName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -107,8 +85,8 @@ func (s *ProductsTestSuite) TestGetAllProducts() {
 	s.Require().NoError(err)
 
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
-		CompanyID:  5,
-		Name:       s.integrationTestProductName(),
+		CompanyID:  CompanyID,
+		Name:       IntegrationTestRandomName(),
 		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -128,8 +106,8 @@ func (s *ProductsTestSuite) TestGetAllProducts() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID:  5,
-		CategoryID: &CategoryID,
+		CompanyID:  CompanyID,
+		CategoryID: moloni.Int(CategoryID),
 	})
 	s.NoError(err)
 	s.NotNil(resp)
@@ -139,8 +117,8 @@ func (s *ProductsTestSuite) TestGetAllProducts() {
 func (s *ProductsTestSuite) TestUpdateProduct() {
 	vatType := models.VATTypeNormal
 	insertTaxReq := models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestProductName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -152,8 +130,8 @@ func (s *ProductsTestSuite) TestUpdateProduct() {
 	s.Require().NoError(err)
 
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
-		CompanyID:  5,
-		Name:       s.integrationTestProductName(),
+		CompanyID:  CompanyID,
+		Name:       IntegrationTestRandomName(),
 		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -173,9 +151,9 @@ func (s *ProductsTestSuite) TestUpdateProduct() {
 	s.Require().NotNil(insertResp)
 
 	req := models.ProductsUpdateRequest{
-		CompanyID:  5,
+		CompanyID:  CompanyID,
 		ProductID:  insertResp.ProductID,
-		Name:       s.integrationTestProductName(),
+		Name:       IntegrationTestRandomName(),
 		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -206,8 +184,8 @@ func (s *ProductsTestSuite) TestUpdateProduct() {
 func (s *ProductsTestSuite) TestDeleteProduct() {
 	vatType := models.VATTypeNormal
 	insertTaxReq := models.TaxesInsertRequest{
-		CompanyID:       5,
-		Name:            s.integrationTestProductName(),
+		CompanyID:       CompanyID,
+		Name:            IntegrationTestRandomName(),
 		Value:           5,
 		Type:            models.TaxTypePercentage,
 		SaftType:        models.SaftTypeValueAdded,
@@ -219,8 +197,8 @@ func (s *ProductsTestSuite) TestDeleteProduct() {
 	s.Require().NoError(err)
 
 	insertResp, err := s.client.Products.Insert(models.ProductsInsertRequest{
-		CompanyID:  5,
-		Name:       s.integrationTestProductName(),
+		CompanyID:  CompanyID,
+		Name:       IntegrationTestRandomName(),
 		CategoryID: CategoryID,
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
@@ -240,7 +218,7 @@ func (s *ProductsTestSuite) TestDeleteProduct() {
 	s.Require().NotNil(insertResp)
 
 	resp, err := s.client.Products.Delete(models.ProductsDeleteRequest{
-		CompanyID: 5,
+		CompanyID: CompanyID,
 		ProductID: insertResp.ProductID,
 	})
 	s.NoError(err)
@@ -254,8 +232,8 @@ func (s *ProductsTestSuite) TestDeleteProduct() {
 
 func (s *ProductsTestSuite) findProductWithID(productID int) (*models.ProductEntry, error) {
 	productes, err := s.client.Products.GetAll(models.ProductsGetAllRequest{
-		CompanyID:  5,
-		CategoryID: &CategoryID,
+		CompanyID:  CompanyID,
+		CategoryID: moloni.Int(CategoryID),
 	})
 	if err != nil {
 		return nil, err
@@ -282,9 +260,4 @@ func (s *ProductsTestSuite) assertProductsGetAllResponseContainsProductWithID(re
 	}
 
 	s.True(found, "Product should be present in the ProductsGetAllResponse")
-}
-
-func (s *ProductsTestSuite) integrationTestProductName() string {
-	timestamp := time.Now().UnixNano()
-	return fmt.Sprintf("IntegrationTest%d", timestamp)
 }
