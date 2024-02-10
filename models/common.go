@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // Time wraps time.Time
 type Time struct {
@@ -18,4 +20,11 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 
 	t.Time = parsedTime
 	return nil
+}
+
+// MarshalJSON customizes the marshaling of time to handle the specific format.
+func (t Time) MarshalJSON() ([]byte, error) {
+	strTime := t.Time.Format("2006-01-02T15:04:05-0700")
+
+	return []byte(`"` + strTime + `"`), nil
 }
