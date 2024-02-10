@@ -77,6 +77,7 @@ type CustomersInterface interface {
 type InvoicesInterface interface {
 	Insert(req models.InvoicesInsertRequest) (*models.InvoicesInsertResponse, error)
 	GetAll(req models.InvoicesGetAllRequest) (*models.InvoicesGetAllResponse, error)
+	GetOne(req models.InvoicesGetOneRequest) (*models.InvoicesGetOneResponse, error)
 	Update(req models.InvoicesUpdateRequest) (*models.InvoicesUpdateResponse, error)
 	Delete(req models.InvoicesDeleteRequest) (*models.InvoicesDeleteResponse, error)
 }
@@ -114,6 +115,10 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 	}
 	defer resp.Body.Close()
 
+	return c.handleResponse(resp, v)
+}
+
+func (c *Client) handleResponse(resp *http.Response, v interface{}) error {
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("response contains status code: %s", resp.Status)
 	}
@@ -124,8 +129,20 @@ func (c *Client) Call(path string, params interface{}, v interface{}) error {
 			return fmt.Errorf("failed to read response body: %v", err)
 		}
 
-		if err := json.Unmarshal(bodyBytes, v); err != nil {
+		var raw json.RawMessage
+		if err := json.Unmarshal(bodyBytes, &raw); err != nil {
 			return fmt.Errorf("failed to decode JSON: %v; response body: %s", err, string(bodyBytes))
+		}
+
+		if string(raw) == "[]" {
+			// if err := json.Unmarshal([]byte("null"), &v); err != nil {
+			// 	return fmt.Errorf("failed to decode JSON object: %v; response body: %s", err, string(bodyBytes))
+			// }
+			return nil
+		}
+
+		if err := json.Unmarshal(raw, &v); err != nil {
+			return fmt.Errorf("failed to decode JSON object: %v; response body: %s", err, string(bodyBytes))
 		}
 	}
 

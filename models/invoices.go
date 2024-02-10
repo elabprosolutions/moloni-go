@@ -87,16 +87,57 @@ type InvoiceDocumentSet struct {
 // InvoicesGetAllResponse represents the response for getting all invoices.
 type InvoicesGetAllResponse []InvoiceEntry
 
-// InvoicesUpdateRequest represents the request structure for updating a invoice.
+// InvoicesGetOneRequest represents the request structure for the getting a single invoice.
+type InvoicesGetOneRequest struct {
+	CompanyID      int   `json:"company_id"`
+	DocumentID     *int  `json:"document_id,omitempty"`
+	CustomerID     *int  `json:"customer_id,omitempty"`
+	DocumentSetID  *int  `json:"document_set_id,omitempty"`
+	Number         *int  `json:"number,omitempty"`
+	Date           *Time `json:"date,omitempty"`
+	ExpirationDate *Time `json:"expiration_date,omitempty"`
+	Year           *int  `json:"year,omitempty"`
+}
+
+// InvoicesGetOneResponse represents the response structure for the getting a single invoice.
+type InvoicesGetOneResponse struct {
+	DocumentID     int                 `json:"document_id"`
+	DocumentTypeID int                 `json:"document_type_id"`
+	DocumentSetID  int                 `json:"document_set_id"`
+	Number         int                 `json:"number"`
+	Date           Time                `json:"date"`
+	ExpirationDate Time                `json:"expiration_date"`
+	EntityNumber   string              `json:"entity_number"`
+	EntityName     string              `json:"entity_name"`
+	EntityVAT      string              `json:"entity_vat"`
+	EntityAddress  string              `json:"entity_address"`
+	EntityCity     string              `json:"entity_city"`
+	EntityZipCode  string              `json:"entity_zip_code"`
+	GrossValue     float64             `json:"gross_value"`
+	TaxesValue     float64             `json:"taxes_value"`
+	NetValue       float64             `json:"net_value"`
+	Status         InvoiceStatus       `json:"status"`
+	DocumentType   InvoiceDocumentType `json:"document_type"`
+	DocumentSet    InvoiceDocumentSet  `json:"document_set"`
+}
+
+// InvoicesUpdateRequest represents the response structure for the getting a single invoice.
 type InvoicesUpdateRequest struct {
-	CompanyID int `json:"company_id"`
-	InvoiceID int `json:"invoice_id"`
+	CompanyID      int              `json:"company_id"`
+	DocumentID     int              `json:"document_id"`
+	Date           Time             `json:"date"`
+	ExpirationDate Time             `json:"expiration_date"`
+	DocumentSetID  int              `json:"document_set_id"`
+	CustomerID     int              `json:"customer_id"`
+	Products       []InvoiceProduct `json:"products"`
+	Status         *InvoiceStatus   `json:"status,omitempty"`
+	Notes          *string          `json:"notes,omitempty"`
 }
 
 // InvoicesUpdateResponse represents the response structure for the updating a invoice.
 type InvoicesUpdateResponse struct {
-	Valid     int `json:"valid"`      // 1 for valid, 0 for not valid
-	InvoiceID int `json:"invoice_id"` // The ID of the invoice
+	Valid      int `json:"valid"`       // 1 for valid, 0 for not valid
+	DocumentID int `json:"document_id"` // The ID of the invoice
 }
 
 // InvoicesDeleteRequest represents the request structure for deleting a invoice.

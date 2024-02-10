@@ -157,139 +157,129 @@ func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 	s.assertInvoicesGetAllResponseContainsInvoiceWithID(resp, insertResp.DocumentID, insertReq, customer)
 }
 
-// func (s *InvoicesTestSuite) TestUpdateInvoice() {
-// 	vatType := models.VATTypeNormal
-// 	insertTaxReq := models.TaxesInsertRequest{
-// 		CompanyID:       CompanyID,
-// 		Name:            IntegrationTestRandomName(),
-// 		Value:           5,
-// 		Type:            models.TaxTypePercentage,
-// 		SaftType:        models.SaftTypeValueAdded,
-// 		FiscalZone:      "PT",
-// 		VATType:         &vatType,
-// 		ActiveByDefault: 0,
-// 	}
-// 	insertTax, err := s.client.Taxes.Insert(insertTaxReq)
-// 	s.Require().NoError(err)
+func (s *InvoicesTestSuite) TestUpdateInvoice() {
+	product, productID := s.insertProduct()
+	// _, documentSetID := s.insertDocumentSet()
+	_, customerID := s.insertCustomer()
 
-// 	insertResp, err := s.client.Invoices.Insert(models.InvoicesInsertRequest{
-// 		CompanyID:  CompanyID,
-// 		Name:       IntegrationTestRandomName(),
-// 		CategoryID: CategoryID,
-// 		Type:       models.InvoiceTypeInvoice,
-// 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
-// 		Price:      10,
-// 		UnitID:     1,
-// 		HasStock:   0,
-// 		Taxes: []models.InvoiceTax{
-// 			{
-// 				TaxID:      insertTax.TaxID,
-// 				Value:      float64(insertTaxReq.Value),
-// 				Order:      1,
-// 				Cumulative: 0,
-// 			},
-// 		},
-// 	})
-// 	s.Require().NoError(err)
-// 	s.Require().NotNil(insertResp)
+	insertReq := models.InvoicesInsertRequest{
+		CompanyID: CompanyID,
+		Date: models.Time{
+			Time: time.Now(),
+		},
+		ExpirationDate: models.Time{
+			Time: time.Now(),
+		},
+		DocumentSetID: 711748,
+		CustomerID:    customerID,
+		Products: []models.InvoiceProduct{
+			{
+				ProductID: productID,
+				Name:      product.Name,
+				Summary:   product.Summary,
+				Quantity:  10,
+				Price:     product.Price,
+				Taxes: []models.InvoiceProductTax{
+					{
+						TaxID: product.Taxes[0].TaxID,
+					},
+				},
+			},
+		},
+	}
+	insertResp, err := s.client.Invoices.Insert(insertReq)
+	s.NoError(err)
 
-// 	req := models.InvoicesUpdateRequest{
-// 		CompanyID:  CompanyID,
-// 		InvoiceID:  insertResp.InvoiceID,
-// 		Name:       IntegrationTestRandomName(),
-// 		CategoryID: CategoryID,
-// 		Type:       models.InvoiceTypeInvoice,
-// 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
-// 		Price:      10,
-// 		UnitID:     1,
-// 		HasStock:   0,
-// 		Taxes: []models.InvoiceTax{
-// 			{
-// 				TaxID:      insertTax.TaxID,
-// 				Value:      float64(insertTaxReq.Value),
-// 				Order:      1,
-// 				Cumulative: 0,
-// 			},
-// 		},
-// 	}
-// 	resp, err := s.client.Invoices.Update(req)
-// 	s.NoError(err)
-// 	s.NotNil(resp)
-// 	s.Equal(1, resp.Valid)
-// 	s.Equal(insertResp.InvoiceID, resp.InvoiceID)
+	req := models.InvoicesUpdateRequest{
+		CompanyID:  CompanyID,
+		DocumentID: insertResp.DocumentID,
+		Date: models.Time{
+			Time: time.Now().AddDate(1, 1, 1),
+		},
+		ExpirationDate: models.Time{
+			Time: time.Now().AddDate(2, 2, 2),
+		},
+		DocumentSetID: 711748,
+		CustomerID:    customerID,
+		Products: []models.InvoiceProduct{
+			{
+				ProductID: productID,
+				Name:      product.Name,
+				Summary:   product.Summary,
+				Quantity:  10,
+				Price:     product.Price,
+				Taxes: []models.InvoiceProductTax{
+					{
+						TaxID: product.Taxes[0].TaxID,
+					},
+				},
+			},
+		},
+	}
+	resp, err := s.client.Invoices.Update(req)
+	s.NoError(err)
+	s.NotNil(resp)
+	s.Equal(1, resp.Valid)
+	s.Equal(insertResp.DocumentID, resp.DocumentID)
 
-// 	invoice, err := s.findInvoiceWithID(insertResp.InvoiceID)
-// 	s.NoError(err)
+	invoice, err := s.client.Invoices.GetOne(models.InvoicesGetOneRequest{
+		CompanyID:  CompanyID,
+		DocumentID: moloni.Int(insertResp.DocumentID),
+	})
+	s.NoError(err)
 
-// 	s.Equal(req.Name, invoice.Name)
-// }
+	s.EqualDateWithoutTime(req.Date, invoice.Date)
+	s.EqualDateWithoutTime(req.ExpirationDate, invoice.ExpirationDate)
+}
 
-// func (s *InvoicesTestSuite) TestDeleteInvoice() {
-// 	vatType := models.VATTypeNormal
-// 	insertTaxReq := models.TaxesInsertRequest{
-// 		CompanyID:       CompanyID,
-// 		Name:            IntegrationTestRandomName(),
-// 		Value:           5,
-// 		Type:            models.TaxTypePercentage,
-// 		SaftType:        models.SaftTypeValueAdded,
-// 		FiscalZone:      "PT",
-// 		VATType:         &vatType,
-// 		ActiveByDefault: 0,
-// 	}
-// 	insertTax, err := s.client.Taxes.Insert(insertTaxReq)
-// 	s.Require().NoError(err)
+func (s *InvoicesTestSuite) TestDeleteInvoice() {
+	product, productID := s.insertProduct()
+	// _, documentSetID := s.insertDocumentSet()
+	_, customerID := s.insertCustomer()
 
-// 	insertResp, err := s.client.Invoices.Insert(models.InvoicesInsertRequest{
-// 		CompanyID:  CompanyID,
-// 		Name:       IntegrationTestRandomName(),
-// 		CategoryID: CategoryID,
-// 		Type:       models.InvoiceTypeInvoice,
-// 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
-// 		Price:      10,
-// 		UnitID:     1,
-// 		HasStock:   0,
-// 		Taxes: []models.InvoiceTax{
-// 			{
-// 				TaxID:      insertTax.TaxID,
-// 				Value:      float64(insertTaxReq.Value),
-// 				Order:      1,
-// 				Cumulative: 0,
-// 			},
-// 		},
-// 	})
-// 	s.Require().NoError(err)
-// 	s.Require().NotNil(insertResp)
+	insertReq := models.InvoicesInsertRequest{
+		CompanyID: CompanyID,
+		Date: models.Time{
+			Time: time.Now(),
+		},
+		ExpirationDate: models.Time{
+			Time: time.Now(),
+		},
+		DocumentSetID: 711748,
+		CustomerID:    customerID,
+		Products: []models.InvoiceProduct{
+			{
+				ProductID: productID,
+				Name:      product.Name,
+				Summary:   product.Summary,
+				Quantity:  10,
+				Price:     product.Price,
+				Taxes: []models.InvoiceProductTax{
+					{
+						TaxID: product.Taxes[0].TaxID,
+					},
+				},
+			},
+		},
+	}
+	insertResp, err := s.client.Invoices.Insert(insertReq)
+	s.NoError(err)
 
-// 	resp, err := s.client.Invoices.Delete(models.InvoicesDeleteRequest{
-// 		CompanyID: CompanyID,
-// 		InvoiceID: insertResp.InvoiceID,
-// 	})
-// 	s.NoError(err)
-// 	s.NotNil(resp)
-// 	s.Equal(1, resp.Valid)
+	resp, err := s.client.Invoices.Delete(models.InvoicesDeleteRequest{
+		CompanyID:  CompanyID,
+		DocumentID: insertResp.DocumentID,
+	})
+	s.NoError(err)
+	s.NotNil(resp)
+	s.Equal(1, resp.Valid)
 
-// 	invoice, err := s.findInvoiceWithID(insertResp.InvoiceID)
-// 	s.NoError(err)
-// 	s.Nil(invoice)
-// }
-
-// func (s *InvoicesTestSuite) findInvoiceWithID(invoiceID int) (*models.InvoiceEntry, error) {
-// 	invoicees, err := s.client.Invoices.GetAll(models.InvoicesGetAllRequest{
-// 		CompanyID:  CompanyID,
-// 		CategoryID: &CategoryID,
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	for _, invoice := range *invoicees {
-// 		if invoice.InvoiceID == invoiceID {
-// 			return &invoice, nil
-// 		}
-// 	}
-
-// 	return nil, nil
-// }
+	invoice, err := s.client.Invoices.GetOne(models.InvoicesGetOneRequest{
+		CompanyID:  CompanyID,
+		DocumentID: moloni.Int(insertResp.DocumentID),
+	})
+	s.NoError(err)
+	s.Nil(invoice)
+}
 
 func (s *InvoicesTestSuite) assertInvoicesGetAllResponseContainsInvoiceWithID(resp *models.InvoicesGetAllResponse, documentID int, expected models.InvoicesInsertRequest, expectedCustomer models.CustomersInsertRequest) {
 	s.NotNil(resp, "InvoicesGetAllResponse should not be nil")
