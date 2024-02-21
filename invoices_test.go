@@ -50,7 +50,7 @@ func (s *InvoicesTestSuite) TestInsertInvoice() {
 		ExpirationDate: models.Time{
 			Time: time.Now(),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -86,7 +86,7 @@ func (s *InvoicesTestSuite) TestGetAllInvoices() {
 		ExpirationDate: models.Time{
 			Time: time.Now(),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -127,7 +127,7 @@ func (s *InvoicesTestSuite) TestGetAllInvoicesFilterByCustomerID() {
 		ExpirationDate: models.Time{
 			Time: time.Now(),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -170,7 +170,7 @@ func (s *InvoicesTestSuite) TestUpdateInvoice() {
 		ExpirationDate: models.Time{
 			Time: time.Now(),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -199,7 +199,7 @@ func (s *InvoicesTestSuite) TestUpdateInvoice() {
 		ExpirationDate: models.Time{
 			Time: time.Now().AddDate(2, 2, 2),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -245,7 +245,7 @@ func (s *InvoicesTestSuite) TestDeleteInvoice() {
 		ExpirationDate: models.Time{
 			Time: time.Now(),
 		},
-		DocumentSetID: 711748,
+		DocumentSetID: DocumentSetID,
 		CustomerID:    customerID,
 		Products: []models.InvoiceProduct{
 			{
@@ -381,7 +381,7 @@ func (s *InvoicesTestSuite) insertProduct() (models.ProductsInsertRequest, int) 
 		Type:       models.ProductTypeProduct,
 		Reference:  strconv.FormatInt(time.Now().UnixNano(), 10),
 		Price:      10,
-		UnitID:     2720315,
+		UnitID:     UnitID,
 		HasStock:   0,
 		Taxes: []models.ProductTax{
 			{

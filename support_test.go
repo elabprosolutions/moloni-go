@@ -14,7 +14,9 @@ import (
 
 const (
 	CompanyID     = 5
-	CategoryID    = 7800056
+	CategoryID    = 7818474
+	DocumentSetID = 714385
+	UnitID        = 2730166
 	CleanupPrefix = "IntegrationTest"
 )
 
