@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/avast/retry-go/v4 v4.5.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
